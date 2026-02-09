@@ -1,0 +1,3 @@
+../Core/Src/dac.c:3:6:DAC_Init	1
+../Core/Src/dac.c:26:6:DAC_SetValue	1
+../Core/Src/dac.c:30:6:DAC_SetValue_Ch2	1

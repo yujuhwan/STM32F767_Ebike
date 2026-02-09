@@ -1,0 +1,4 @@
+../Core/Src/timer.c:6:6:Initialize_PWM	4	static
+../Core/Src/timer.c:27:6:Initialize_TIM2	4	static
+../Core/Src/timer.c:42:6:Enable_PWM	4	static
+../Core/Src/timer.c:47:6:Disable_PWM	8	static

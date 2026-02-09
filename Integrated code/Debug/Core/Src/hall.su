@@ -1,0 +1,8 @@
+../Drivers/CMSIS/Include/core_cm7.h:1896:22:__NVIC_EnableIRQ	16	static
+../Core/Src/hall.c:11:6:Initialize_Hall_Sensors	8	static
+../Core/Src/hall.c:46:6:phases_fwd	16	static
+../Core/Src/hall.c:73:6:phases_rev	16	static
+../Core/Src/hall.c:101:6:Update_Switching_Pattern	16	static
+../Core/Src/hall.c:216:6:Set_Phases	24	static
+../Core/Src/hall.c:247:6:Mask_Channel	16	static
+../Core/Src/hall.c:264:6:Unmask_Channel	16	static

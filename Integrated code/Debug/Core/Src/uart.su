@@ -1,0 +1,12 @@
+../Core/Src/uart.c:4:6:AT09_Init	4	static
+../Core/Src/uart.c:34:6:USART3_SendChar	16	static
+../Core/Src/uart.c:42:6:USART3_SendString	16	static
+../Core/Src/uart.c:51:6:USART3_ReceiveChar	4	static
+../Core/Src/uart.c:74:6:USART3_ReceiveString	24	static
+../Core/Src/uart.c:101:6:UART3_SendFloat_Simple	48	static
+../Core/Src/uart.c:160:6:UART2_Init	4	static
+../Core/Src/uart.c:190:6:ReportSpeed	16	static
+../Core/Src/uart.c:197:6:UART2_SendChar	16	static
+../Core/Src/uart.c:203:6:UART2_ReceiveChar	4	static
+../Core/Src/uart.c:209:6:UART2_SendString	16	static
+../Core/Src/uart.c:217:6:UART2_SendFloat_Simple	48	static
