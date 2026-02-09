@@ -743,7 +743,7 @@ void DAC_Init(void)
 08000644 <Initialize_Hall_Sensors>:
 uint32_t DutyB =0;
 uint32_t DutyC =0;
-extern uint8_t StartFlag;
+extern uint8_t StartFlag;  // 모터 구동 허용 여부
 
 void Initialize_Hall_Sensors(void)
 {
@@ -845,8 +845,11 @@ void phases_fwd(uint8_t HallSum)
  80006d8:	af00      	add	r7, sp, #0
  80006da:	4603      	mov	r3, r0
  80006dc:	71fb      	strb	r3, [r7, #7]
-	#if (USE_INWHEEL==1)
-		// 인휠모터 매핑
+			default: Set_Phases(0,0,0); break;
+		}
+	#else
+	*/
+		// 소형 BLDC 매핑
 		switch(HallSum){
  80006de:	79fb      	ldrb	r3, [r7, #7]
  80006e0:	3b01      	subs	r3, #1
@@ -854,46 +857,46 @@ void phases_fwd(uint8_t HallSum)
  80006e4:	d838      	bhi.n	8000758 <phases_fwd+0x84>
  80006e6:	a201      	add	r2, pc, #4	@ (adr r2, 80006ec <phases_fwd+0x18>)
  80006e8:	f852 f023 	ldr.w	pc, [r2, r3, lsl #2]
- 80006ec:	08000721 	.word	0x08000721
+ 80006ec:	0800072f 	.word	0x0800072f
  80006f0:	0800074b 	.word	0x0800074b
- 80006f4:	08000713 	.word	0x08000713
- 80006f8:	0800073d 	.word	0x0800073d
- 80006fc:	08000705 	.word	0x08000705
- 8000700:	0800072f 	.word	0x0800072f
-			case 5: Set_Phases( 0, -1, 1); break;
+ 80006f4:	0800073d 	.word	0x0800073d
+ 80006f8:	08000713 	.word	0x08000713
+ 80006fc:	08000721 	.word	0x08000721
+ 8000700:	08000705 	.word	0x08000705
+			case 6: Set_Phases( 0, -1, 1); break;
  8000704:	2201      	movs	r2, #1
  8000706:	f04f 31ff 	mov.w	r1, #4294967295	@ 0xffffffff
  800070a:	2000      	movs	r0, #0
  800070c:	f000 f83c 	bl	8000788 <Set_Phases>
  8000710:	e028      	b.n	8000764 <phases_fwd+0x90>
-			case 3: Set_Phases(-1, 1, 0); break;
- 8000712:	2200      	movs	r2, #0
- 8000714:	2101      	movs	r1, #1
+			case 4: Set_Phases(-1, 0, 1); break;
+ 8000712:	2201      	movs	r2, #1
+ 8000714:	2100      	movs	r1, #0
  8000716:	f04f 30ff 	mov.w	r0, #4294967295	@ 0xffffffff
  800071a:	f000 f835 	bl	8000788 <Set_Phases>
  800071e:	e021      	b.n	8000764 <phases_fwd+0x90>
-			case 1: Set_Phases(-1, 0, 1); break;
- 8000720:	2201      	movs	r2, #1
- 8000722:	2100      	movs	r1, #0
+			case 5: Set_Phases(-1, 1, 0); break;
+ 8000720:	2200      	movs	r2, #0
+ 8000722:	2101      	movs	r1, #1
  8000724:	f04f 30ff 	mov.w	r0, #4294967295	@ 0xffffffff
  8000728:	f000 f82e 	bl	8000788 <Set_Phases>
  800072c:	e01a      	b.n	8000764 <phases_fwd+0x90>
-			case 6: Set_Phases( 1, 0, -1); break;
+			case 1: Set_Phases( 0, 1, -1); break;
  800072e:	f04f 32ff 	mov.w	r2, #4294967295	@ 0xffffffff
- 8000732:	2100      	movs	r1, #0
- 8000734:	2001      	movs	r0, #1
+ 8000732:	2101      	movs	r1, #1
+ 8000734:	2000      	movs	r0, #0
  8000736:	f000 f827 	bl	8000788 <Set_Phases>
  800073a:	e013      	b.n	8000764 <phases_fwd+0x90>
-			case 4: Set_Phases( 1, -1, 0); break;
- 800073c:	2200      	movs	r2, #0
- 800073e:	f04f 31ff 	mov.w	r1, #4294967295	@ 0xffffffff
+			case 3: Set_Phases( 1, 0, -1); break;
+ 800073c:	f04f 32ff 	mov.w	r2, #4294967295	@ 0xffffffff
+ 8000740:	2100      	movs	r1, #0
  8000742:	2001      	movs	r0, #1
  8000744:	f000 f820 	bl	8000788 <Set_Phases>
  8000748:	e00c      	b.n	8000764 <phases_fwd+0x90>
-			case 2: Set_Phases( 0, 1, -1); break;
- 800074a:	f04f 32ff 	mov.w	r2, #4294967295	@ 0xffffffff
- 800074e:	2101      	movs	r1, #1
- 8000750:	2000      	movs	r0, #0
+			case 2: Set_Phases( 1, -1, 0); break;
+ 800074a:	2200      	movs	r2, #0
+ 800074c:	f04f 31ff 	mov.w	r1, #4294967295	@ 0xffffffff
+ 8000750:	2001      	movs	r0, #1
  8000752:	f000 f819 	bl	8000788 <Set_Phases>
  8000756:	e005      	b.n	8000764 <phases_fwd+0x90>
 			default: Set_Phases(0,0,0); break;
@@ -902,11 +905,8 @@ void phases_fwd(uint8_t HallSum)
  800075c:	2000      	movs	r0, #0
  800075e:	f000 f813 	bl	8000788 <Set_Phases>
  8000762:	bf00      	nop
-			case 3: Set_Phases( 1, 0, -1); break;
-			case 2: Set_Phases( 1, -1, 0); break;
-			default: Set_Phases(0,0,0); break;
 		}
-	#endif
+	//#endif
 }
  8000764:	bf00      	nop
  8000766:	3708      	adds	r7, #8
@@ -914,7 +914,7 @@ void phases_fwd(uint8_t HallSum)
  800076a:	bd80      	pop	{r7, pc}
 
 0800076c <Update_Switching_Pattern>:
-	#endif
+	//#endif
 
 }
 
@@ -953,7 +953,7 @@ void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
  800078e:	60f8      	str	r0, [r7, #12]
  8000790:	60b9      	str	r1, [r7, #8]
  8000792:	607a      	str	r2, [r7, #4]
-	DutyA=CNT_MAX-VoltageRef;
+	DutyA=CNT_MAX-VoltageRef;		// CNT_MAX = ARR
  8000794:	4b44      	ldr	r3, [pc, #272]	@ (80008a8 <Set_Phases+0x120>)
  8000796:	681a      	ldr	r2, [r3, #0]
  8000798:	f241 5318 	movw	r3, #5400	@ 0x1518
@@ -1005,8 +1005,9 @@ void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
  80007f2:	e056      	b.n	80008a2 <Set_Phases+0x11a>
 	}
 
+	// phase = +1, PWM 인가 / phase = -1, 반대측 스위치 고정 / phase = 0, Floating
 	// Phase A
-	if (phaseA== 1) { TIM1->CCR1 = DutyA; Unmask_Channel(1); }
+	if (phaseA== 1) { TIM1->CCR1 = DutyA; Unmask_Channel(1); } // PWM
  80007f4:	68fb      	ldr	r3, [r7, #12]
  80007f6:	2b01      	cmp	r3, #1
  80007f8:	d107      	bne.n	800080a <Set_Phases+0x82>
@@ -1017,7 +1018,7 @@ void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
  8000802:	2001      	movs	r0, #1
  8000804:	f000 f88a 	bl	800091c <Unmask_Channel>
  8000808:	e011      	b.n	800082e <Set_Phases+0xa6>
-	else if (phaseA==-1) { TIM1->CCR1 = CNT_MAX; Unmask_Channel(1); }
+	else if (phaseA==-1) { TIM1->CCR1 = CNT_MAX; Unmask_Channel(1); }  // Full ON
  800080a:	68fb      	ldr	r3, [r7, #12]
  800080c:	f1b3 3fff 	cmp.w	r3, #4294967295	@ 0xffffffff
  8000810:	d107      	bne.n	8000822 <Set_Phases+0x9a>
@@ -1129,7 +1130,7 @@ void Mask_Channel(uint8_t channel) {
             // 유효하지 않은 채널 번호 처리 (필요 시)
             break;
  80008dc:	e014      	b.n	8000908 <Mask_Channel+0x48>
-            TIM1->CCER &= ~(TIM_CCER_CC1E | TIM_CCER_CC1NE);
+            TIM1->CCER &= ~(TIM_CCER_CC1E | TIM_CCER_CC1NE);  // Top/Bottom MOSFET 둘 다 Disable, 완전 OFF
  80008de:	4b0e      	ldr	r3, [pc, #56]	@ (8000918 <Mask_Channel+0x58>)
  80008e0:	6a1b      	ldr	r3, [r3, #32]
  80008e2:	4a0d      	ldr	r2, [pc, #52]	@ (8000918 <Mask_Channel+0x58>)
@@ -1190,7 +1191,7 @@ void Unmask_Channel(uint8_t channel) {
             // 유효하지 않은 채널 번호 처리 (필요 시)
             break;
  8000938:	e014      	b.n	8000964 <Unmask_Channel+0x48>
-            TIM1->CCER |= (TIM_CCER_CC1E | TIM_CCER_CC1NE);
+            TIM1->CCER |= (TIM_CCER_CC1E | TIM_CCER_CC1NE);  // Complementary PWM Enable
  800093a:	4b0e      	ldr	r3, [pc, #56]	@ (8000974 <Unmask_Channel+0x58>)
  800093c:	6a1b      	ldr	r3, [r3, #32]
  800093e:	4a0d      	ldr	r2, [pc, #52]	@ (8000974 <Unmask_Channel+0x58>)
@@ -1240,7 +1241,7 @@ void rampToTarget(float command, float *output, float slope)
  8000982:	60b8      	str	r0, [r7, #8]
  8000984:	edc7 0a01 	vstr	s1, [r7, #4]
     // 지령 신호에 따라 출력 신호를 점진적으로 변화시킴
-    if(*output < command)
+    if(*output < command)				// 급가속 방지
  8000988:	68bb      	ldr	r3, [r7, #8]
  800098a:	edd3 7a00 	vldr	s15, [r3]
  800098e:	ed97 7a03 	vldr	s14, [r7, #12]
@@ -1276,7 +1277,7 @@ void rampToTarget(float command, float *output, float slope)
  80009ca:	601a      	str	r2, [r3, #0]
 }
  80009cc:	e022      	b.n	8000a14 <rampToTarget+0x9c>
-    else if(*output > command)
+    else if(*output > command)			// 급가속 방지
  80009ce:	68bb      	ldr	r3, [r7, #8]
  80009d0:	edd3 7a00 	vldr	s15, [r3]
  80009d4:	ed97 7a03 	vldr	s14, [r7, #12]
@@ -1322,7 +1323,7 @@ void LPF(float input, float Fx, float *output)	/* digital low-pass filter */
  8000a26:	ed87 0a03 	vstr	s0, [r7, #12]
  8000a2a:	edc7 0a02 	vstr	s1, [r7, #8]
  8000a2e:	6078      	str	r0, [r7, #4]
-  *output = (1. - Fx)*(*output) + Fx*input;
+  *output = (1. - Fx)*(*output) + Fx*input;		// 1차 IIR 필터, 노이즈 제거, 전류/속도 안정화
  8000a30:	edd7 7a02 	vldr	s15, [r7, #8]
  8000a34:	eeb7 7ae7 	vcvt.f64.f32	d7, s15
  8000a38:	eeb7 6b00 	vmov.f64	d6, #112	@ 0x3f800000  1.0
@@ -1377,7 +1378,7 @@ void Task_1ms(void)
  8000aa6:	ee67 7a27 	vmul.f32	s15, s14, s15
  8000aaa:	4b2a      	ldr	r3, [pc, #168]	@ (8000b54 <Task_1ms+0xdc>)
  8000aac:	edc3 7a00 	vstr	s15, [r3]
-	    Iterm += Ki*RpmErr*0.001f; // 0.001--> 속도제어기가 실행되는 주기
+	    Iterm += Ki*RpmErr*0.001f; // 0.001--> PI 속도제어기가 실행되는 주기
  8000ab0:	4b29      	ldr	r3, [pc, #164]	@ (8000b58 <Task_1ms+0xe0>)
  8000ab2:	ed93 7a00 	vldr	s14, [r3]
  8000ab6:	4b25      	ldr	r3, [pc, #148]	@ (8000b4c <Task_1ms+0xd4>)
@@ -1473,7 +1474,7 @@ void Task_10ms(void)
  8000b80:	607b      	str	r3, [r7, #4]
     // PA6(tempLaw) 읽기 - ADC1
 
-    ADC1->SQR3 = 0x00000006;  // SQ1=6 (채널 6)
+    ADC1->SQR3 = 0x00000006;  // SQ1=6 (채널 6), 온도
  8000b82:	4b67      	ldr	r3, [pc, #412]	@ (8000d20 <Task_10ms+0x1a8>)
  8000b84:	2206      	movs	r2, #6
  8000b86:	635a      	str	r2, [r3, #52]	@ 0x34
@@ -1506,7 +1507,7 @@ void Task_10ms(void)
  8000bc4:	edc3 7a00 	vstr	s15, [r3]
 
     //y = -11.489x3 + 63.236x2 - 149.02x + 181.97 NTC 3차 방정식
-    MosfetTemp = -11.48f*tempLaw*tempLaw*tempLaw+63.23*tempLaw*tempLaw-149.02*tempLaw+181.97f;
+    MosfetTemp = -11.48f*tempLaw*tempLaw*tempLaw+63.23*tempLaw*tempLaw-149.02*tempLaw+181.97f;  // NTC 서미스터 보정식
  8000bc8:	4b58      	ldr	r3, [pc, #352]	@ (8000d2c <Task_10ms+0x1b4>)
  8000bca:	edd3 7a00 	vldr	s15, [r3]
  8000bce:	ed9f 7a58 	vldr	s14, [pc, #352]	@ 8000d30 <Task_10ms+0x1b8>
@@ -1541,7 +1542,7 @@ void Task_10ms(void)
  8000c36:	edc3 7a00 	vstr	s15, [r3]
 
     // PA3(Vdc) 읽기 - ADC3
-    ADC3->SQR3 = 0x00000003;  // SQ1=3 (채널 3)
+    ADC3->SQR3 = 0x00000003;  // SQ1=3 (채널 3), DC 전압
  8000c3a:	4b3f      	ldr	r3, [pc, #252]	@ (8000d38 <Task_10ms+0x1c0>)
  8000c3c:	2203      	movs	r2, #3
  8000c3e:	635a      	str	r2, [r3, #52]	@ 0x34
@@ -2451,7 +2452,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
  800138e:	2b01      	cmp	r3, #1
  8001390:	d105      	bne.n	800139e <TIM1_UP_TIM10_IRQHandler+0x46e>
 		{
-			Update_Switching_Pattern(HallSum);
+			Update_Switching_Pattern(HallSum);  // Hall -> 상전환, 실제 모터 구동
  8001392:	4b24      	ldr	r3, [pc, #144]	@ (8001424 <TIM1_UP_TIM10_IRQHandler+0x4f4>)
  8001394:	781b      	ldrb	r3, [r3, #0]
  8001396:	4618      	mov	r0, r3
@@ -3302,7 +3303,7 @@ void Initialize_PWM(void)			/* initialize TIM1 for PWM */
  80018ac:	4b20      	ldr	r3, [pc, #128]	@ (8001930 <Initialize_PWM+0x98>)
  80018ae:	4313      	orrs	r3, r2
  80018b0:	600b      	str	r3, [r1, #0]
-	GPIOE->AFR[1] |= 0x10111111;			// PE13~PE8 = TIM1_CH3/3N/2/2N/1/1N
+	GPIOE->AFR[1] |= 0x10111111;			// PE13~PE8 = TIM1_CH3/3N/2/2N/1/1N, Complementary PWM 출력
  80018b2:	4b1e      	ldr	r3, [pc, #120]	@ (800192c <Initialize_PWM+0x94>)
  80018b4:	6a5a      	ldr	r2, [r3, #36]	@ 0x24
  80018b6:	491d      	ldr	r1, [pc, #116]	@ (800192c <Initialize_PWM+0x94>)
@@ -3348,7 +3349,7 @@ void Initialize_PWM(void)			/* initialize TIM1 for PWM */
  80018fa:	4b11      	ldr	r3, [pc, #68]	@ (8001940 <Initialize_PWM+0xa8>)
  80018fc:	f44f 6240 	mov.w	r2, #3072	@ 0xc00
  8001900:	645a      	str	r2, [r3, #68]	@ 0x44
-	TIM1->BDTR |= TIM_BDTR_MOE | DEADTIME_1us;
+	TIM1->BDTR |= TIM_BDTR_MOE | DEADTIME_1us;			//MOE = Main Output Enable, Dead-Time 삽입, 인버터 타이
  8001902:	4b0f      	ldr	r3, [pc, #60]	@ (8001940 <Initialize_PWM+0xa8>)
  8001904:	6c5a      	ldr	r2, [r3, #68]	@ 0x44
  8001906:	490e      	ldr	r1, [pc, #56]	@ (8001940 <Initialize_PWM+0xa8>)
@@ -3497,26 +3498,26 @@ void AT09_Init(void) // BT
  80019f6:	6313      	str	r3, [r2, #48]	@ 0x30
 
 	// 3) PD8(TX), PD9(RX) → Alternate Function AF7
-	GPIOD->MODER &= ~((3UL << (8 * 2)) | (3UL << (9 * 2)));
+	GPIOD->MODER &= ~((3UL << (8 * 2)) | (3UL << (9 * 2)));  // PD8, PD9의 MODER 비트 초기화
  80019f8:	4b1b      	ldr	r3, [pc, #108]	@ (8001a68 <AT09_Init+0x8c>)
  80019fa:	681b      	ldr	r3, [r3, #0]
  80019fc:	4a1a      	ldr	r2, [pc, #104]	@ (8001a68 <AT09_Init+0x8c>)
  80019fe:	f423 2370 	bic.w	r3, r3, #983040	@ 0xf0000
  8001a02:	6013      	str	r3, [r2, #0]
-	GPIOD->MODER |=  ((2UL << (8 * 2)) | (2UL << (9 * 2)));
+	GPIOD->MODER |=  ((2UL << (8 * 2)) | (2UL << (9 * 2)));  // Alternate Fuction Mode
  8001a04:	4b18      	ldr	r3, [pc, #96]	@ (8001a68 <AT09_Init+0x8c>)
  8001a06:	681b      	ldr	r3, [r3, #0]
  8001a08:	4a17      	ldr	r2, [pc, #92]	@ (8001a68 <AT09_Init+0x8c>)
  8001a0a:	f443 2320 	orr.w	r3, r3, #655360	@ 0xa0000
  8001a0e:	6013      	str	r3, [r2, #0]
 
-	GPIOD->AFR[1] &= ~((0xFUL << ((8 - 8) * 4)) | (0xFUL << ((9 - 8) * 4)));
+	GPIOD->AFR[1] &= ~((0xFUL << ((8 - 8) * 4)) | (0xFUL << ((9 - 8) * 4)));	// pin 9~15 담당, 기존 AF 값 제거
  8001a10:	4b15      	ldr	r3, [pc, #84]	@ (8001a68 <AT09_Init+0x8c>)
  8001a12:	6a5b      	ldr	r3, [r3, #36]	@ 0x24
  8001a14:	4a14      	ldr	r2, [pc, #80]	@ (8001a68 <AT09_Init+0x8c>)
  8001a16:	f023 03ff 	bic.w	r3, r3, #255	@ 0xff
  8001a1a:	6253      	str	r3, [r2, #36]	@ 0x24
-	GPIOD->AFR[1] |=  ((7UL   << ((8 - 8) * 4)) | (7UL   << ((9 - 8) * 4)));
+	GPIOD->AFR[1] |=  ((7UL   << ((8 - 8) * 4)) | (7UL   << ((9 - 8) * 4)));	// AF = USART2/3, PD8/PD9를 USART3 핀으로 연결
  8001a1c:	4b12      	ldr	r3, [pc, #72]	@ (8001a68 <AT09_Init+0x8c>)
  8001a1e:	6a5b      	ldr	r3, [r3, #36]	@ 0x24
  8001a20:	4a11      	ldr	r2, [pc, #68]	@ (8001a68 <AT09_Init+0x8c>)

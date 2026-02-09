@@ -8,8 +8,8 @@
 #include "uart.h"
 #include "dac.h"
 
-#define MAX3(a, b, c) (((a) > (b)) ? (((a) > (c)) ? (a) : (c)) : (((b) > (c)) ? (b) : (c)))
-#define Tsamp	0.00005				// sampling time of current controller
+#define MAX3(a, b, c) (((a) > (b)) ? (((a) > (c)) ? (a) : (c)) : (((b) > (c)) ? (b) : (c)))  // 3상 전류 중 최대 전류 검출, 과전류 보호용
+#define Tsamp	0.00005				// sampling time of current controller(50us(20kHz)), TIM1 PWM 주기 일치
 
 void TIM1_UP_TIM10_IRQHandler(void);		/* TIM1 interrupt function(10kHz) */
 void EXTI0_IRQHandler(void);
@@ -21,8 +21,8 @@ void rampToTarget(float command, float *output, float slope);
 
 float Vdc = 0.0f;
 float MosfetTemp = 0.0f;
-volatile float calculated_rpm =0.0f;
-volatile float motor_speed_rpm = 0.0f;
+volatile float calculated_rpm =0.0f;		// Hall 엣지 기반 즉시 RPM
+volatile float motor_speed_rpm = 0.0f;		// LPF 적용된 실제 제어용 RPM
 float Fi, Fv, Ft=0.0f;				// digital low-pass filter coefficient
 float I_Max = 0.0f;
 float tempLaw =0.0f;
@@ -42,11 +42,11 @@ uint32_t Tim1TestCnt =0;
 uint32_t Ias_Offset,Ibs_Offset,Ics_Offset=0;
 volatile uint32_t delta_time =0;
 uint8_t Task_10msFlg,Task_100msFlg,Task_1sFlg,Task_500msFlg = 0;
-uint8_t HA,HB,HC = 0;
-uint8_t HallSum = 0;
-uint8_t StartFlag = 1;
-uint8_t InitCal = 0;
-uint8_t FltFlg = 0;
+uint8_t HA,HB,HC = 0;		// Hall 센서 입
+uint8_t HallSum = 0;		// HallSum = HA*4 + HB*2 + HC
+uint8_t StartFlag = 1;		// 구동 허용
+uint8_t InitCal = 0;		// 초기 보정 완료 여부
+uint8_t FltFlg = 0;			// Fault 상태
 uint8_t ThrottleActive = 0;
 uint8_t FltCnt = 0;
 uint8_t init_drive = 0;
@@ -57,7 +57,7 @@ extern uint32_t DutyA,DutyB,DutyC;
 void rampToTarget(float command, float *output, float slope)
 {
     // 지령 신호에 따라 출력 신호를 점진적으로 변화시킴
-    if(*output < command)
+    if(*output < command)				// 급가속 방지
     {
         *output += slope;
 
@@ -66,7 +66,7 @@ void rampToTarget(float command, float *output, float slope)
             *output = command;
         }
     }
-    else if(*output > command)
+    else if(*output > command)			// 급가속 방지
     {
         *output -= slope;
 
@@ -79,7 +79,7 @@ void rampToTarget(float command, float *output, float slope)
 
 void LPF(float input, float Fx, float *output)	/* digital low-pass filter */
 {
-  *output = (1. - Fx)*(*output) + Fx*input;
+  *output = (1. - Fx)*(*output) + Fx*input;		// 1차 IIR 필터, 노이즈 제거, 전류/속도 안정화
 }
 float RpmRef,RpmErr,Pterm,Iterm,PIterm = 0.0f;
 float Kp,Ki = 0.0f;
@@ -92,7 +92,7 @@ void Task_1ms(void)
 	{
 	    RpmErr = RpmRef-motor_speed_rpm;
 	    Pterm = Kp*RpmErr;
-	    Iterm += Ki*RpmErr*0.001f; // 0.001--> 속도제어기가 실행되는 주기
+	    Iterm += Ki*RpmErr*0.001f; // 0.001--> PI 속도제어기가 실행되는 주기
 	    PIterm = Pterm + Iterm;
 
 	    if(PIterm>CNT_MAX-100)
@@ -116,17 +116,17 @@ void Task_10ms(void)
 	uint32_t result=0;
     // PA6(tempLaw) 읽기 - ADC1
 
-    ADC1->SQR3 = 0x00000006;  // SQ1=6 (채널 6)
+    ADC1->SQR3 = 0x00000006;  // SQ1=6 (채널 6), 온도
     ADC1->CR2 |= 0x40000000;  // 변환 시작
     while(!(ADC1->SR & 0x00000002));  // EOC 대기
     result = ADC1->DR;
     tempLaw = (float)result*ADC_VREF / ADC_FS;
 
     //y = -11.489x3 + 63.236x2 - 149.02x + 181.97 NTC 3차 방정식
-    MosfetTemp = -11.48f*tempLaw*tempLaw*tempLaw+63.23*tempLaw*tempLaw-149.02*tempLaw+181.97f;
+    MosfetTemp = -11.48f*tempLaw*tempLaw*tempLaw+63.23*tempLaw*tempLaw-149.02*tempLaw+181.97f;  // NTC 서미스터 보정식
 
     // PA3(Vdc) 읽기 - ADC3
-    ADC3->SQR3 = 0x00000003;  // SQ1=3 (채널 3)
+    ADC3->SQR3 = 0x00000003;  // SQ1=3 (채널 3), DC 전압
     ADC3->CR2 |= 0x40000000;
     while(!(ADC3->SR & 0x00000002));
     result = ADC3->DR;
@@ -358,7 +358,7 @@ void TIM1_UP_TIM10_IRQHandler(void)
 
         if(FltFlg == 0 && InitCal == 1)
 		{
-			Update_Switching_Pattern(HallSum);
+			Update_Switching_Pattern(HallSum);  // Hall -> 상전환, 실제 모터 구동
 		}
 		else
 		{

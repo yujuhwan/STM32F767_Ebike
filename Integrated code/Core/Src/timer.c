@@ -7,7 +7,7 @@ void Initialize_PWM(void)			/* initialize TIM1 for PWM */
 {
 	GPIOE->MODER  &= 0x0000FFFF;			// use TIM1_CH3/3N/2/2N/1/1N
 	GPIOE->MODER  |= 0x9AAA0000;
-	GPIOE->AFR[1] |= 0x10111111;			// PE13~PE8 = TIM1_CH3/3N/2/2N/1/1N
+	GPIOE->AFR[1] |= 0x10111111;			// PE13~PE8 = TIM1_CH3/3N/2/2N/1/1N, Complementary PWM 출력
 	GPIOE->OSPEEDR |= 0x0FFF0000;			// PWM signal = 180MHz
 	RCC->APB2ENR |= 0x00000001;			// enable TIM1 clock
 	//216MHz
@@ -18,7 +18,7 @@ void Initialize_PWM(void)			/* initialize TIM1 for PWM */
 	TIM1->CCMR2 = 0x00000078;			// TIM1_CH3/3N = PWM mode 2
 	TIM1->CCER = 0x00000555;			// TIM1_CH3/3N/2/2N/1/1N = active high
 	TIM1->BDTR = 0x00000C00;			// OSSR = OSSI = 1
-	TIM1->BDTR |= TIM_BDTR_MOE | DEADTIME_1us;
+	TIM1->BDTR |= TIM_BDTR_MOE | DEADTIME_1us;			//MOE = Main Output Enable, Dead-Time 삽입, 인버터 타이
 	TIM1->DIER = 0x0001;				// enable update interrupt
 	TIM1->CR2 = 0x00000020;			// update event TRGO for ADC trigger
 	TIM1->CR1 = 0x0065;				// center-aligned mode 3, URS = CEN = 1

@@ -11,11 +11,11 @@ void AT09_Init(void) // BT
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
 
 	// 3) PD8(TX), PD9(RX) → Alternate Function AF7
-	GPIOD->MODER &= ~((3UL << (8 * 2)) | (3UL << (9 * 2)));
-	GPIOD->MODER |=  ((2UL << (8 * 2)) | (2UL << (9 * 2)));
+	GPIOD->MODER &= ~((3UL << (8 * 2)) | (3UL << (9 * 2)));  // PD8, PD9의 MODER 비트 초기화
+	GPIOD->MODER |=  ((2UL << (8 * 2)) | (2UL << (9 * 2)));  // Alternate Fuction Mode
 
-	GPIOD->AFR[1] &= ~((0xFUL << ((8 - 8) * 4)) | (0xFUL << ((9 - 8) * 4)));
-	GPIOD->AFR[1] |=  ((7UL   << ((8 - 8) * 4)) | (7UL   << ((9 - 8) * 4)));
+	GPIOD->AFR[1] &= ~((0xFUL << ((8 - 8) * 4)) | (0xFUL << ((9 - 8) * 4)));	// pin 9~15 담당, 기존 AF 값 제거
+	GPIOD->AFR[1] |=  ((7UL   << ((8 - 8) * 4)) | (7UL   << ((9 - 8) * 4)));	// AF = USART2/3, PD8/PD9를 USART3 핀으로 연결
 
 	// 4) USART3 레지스터 초기화
 	USART3->CR1 = 0;
@@ -53,7 +53,7 @@ char USART3_ReceiveChar(void)
     // RXNE=1이 될 때까지 대기
     while (!(USART3->ISR & USART_ISR_RXNE))
     {
-        if(USART_Timeout>5000)
+        if(USART_Timeout>5000)  // 무한 대기 방지용 소프트 타임아웃
         {
         	USART_Timeout = 0;
 
@@ -64,7 +64,7 @@ char USART3_ReceiveChar(void)
         	USART_Timeout++;
         }
     }
-    return (char)(USART3->RDR & 0xFF);
+    return (char)(USART3->RDR & 0xFF);  // 수신 데이터 읽기, 읽는 순간 RXNE 자동 클리어
 
 
 }

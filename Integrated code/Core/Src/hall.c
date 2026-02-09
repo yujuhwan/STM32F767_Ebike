@@ -2,11 +2,11 @@
 #include "config.h"
 #include "hall.h"
 #include "timer.h"
-extern uint32_t VoltageRef;
+extern uint32_t VoltageRef;  // 쓰로틀 ADC 처리 결과, 모터에 인가할 전압 크기 지
 uint32_t DutyA =0;
 uint32_t DutyB =0;
 uint32_t DutyC =0;
-extern uint8_t StartFlag;
+extern uint8_t StartFlag;  // 모터 구동 허용 여부
 
 void Initialize_Hall_Sensors(void)
 {
@@ -45,6 +45,7 @@ void Initialize_Hall_Sensors(void)
 
 void phases_fwd(uint8_t HallSum)
 {
+	/*
 	#if (USE_INWHEEL==1)
 		// 인휠모터 매핑
 		switch(HallSum){
@@ -57,6 +58,7 @@ void phases_fwd(uint8_t HallSum)
 			default: Set_Phases(0,0,0); break;
 		}
 	#else
+	*/
 		// 소형 BLDC 매핑
 		switch(HallSum){
 			case 6: Set_Phases( 0, -1, 1); break;
@@ -67,11 +69,12 @@ void phases_fwd(uint8_t HallSum)
 			case 2: Set_Phases( 1, -1, 0); break;
 			default: Set_Phases(0,0,0); break;
 		}
-	#endif
+	//#endif
 }
 
 void phases_rev(uint8_t HallSum)
 {
+	/*
 	#if (USE_INWHEEL==1)
 		// 인휠모터 매핑
 		switch(HallSum){
@@ -84,6 +87,7 @@ void phases_rev(uint8_t HallSum)
 		default: Set_Phases(0,0,0); break;
 		}
 	#else
+	*/
 		// 소형 BLDC 매핑
 		switch(HallSum){
 			case 6: Set_Phases( 0, 1, -1); break;
@@ -94,7 +98,7 @@ void phases_rev(uint8_t HallSum)
 			case 2: Set_Phases( -1, 1, 0); break;
 			default: Set_Phases(0,0,0); break;
 		}
-	#endif
+	//#endif
 
 }
 
@@ -215,7 +219,7 @@ unsigned int dir =1;
 //}
 void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
 {
-	DutyA=CNT_MAX-VoltageRef;
+	DutyA=CNT_MAX-VoltageRef;		// CNT_MAX = ARR
 	DutyB=CNT_MAX-VoltageRef;
 	DutyC=CNT_MAX-VoltageRef;
 
@@ -226,9 +230,10 @@ void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
 	return;
 	}
 
+	// phase = +1, PWM 인가 / phase = -1, 반대측 스위치 고정 / phase = 0, Floating
 	// Phase A
-	if (phaseA== 1) { TIM1->CCR1 = DutyA; Unmask_Channel(1); }
-	else if (phaseA==-1) { TIM1->CCR1 = CNT_MAX; Unmask_Channel(1); }
+	if (phaseA== 1) { TIM1->CCR1 = DutyA; Unmask_Channel(1); } // PWM
+	else if (phaseA==-1) { TIM1->CCR1 = CNT_MAX; Unmask_Channel(1); }  // Full ON
 	else { TIM1->CCR1 = 0; Mask_Channel(1); }
 
 	// Phase B
@@ -247,7 +252,7 @@ void Set_Phases(int32_t phaseA, int32_t phaseB, int32_t phaseC)
 void Mask_Channel(uint8_t channel) {
     switch(channel) {
         case 1:
-            TIM1->CCER &= ~(TIM_CCER_CC1E | TIM_CCER_CC1NE);
+            TIM1->CCER &= ~(TIM_CCER_CC1E | TIM_CCER_CC1NE);  // Top/Bottom MOSFET 둘 다 Disable, 완전 OFF
             break;
         case 2:
             TIM1->CCER &= ~(TIM_CCER_CC2E | TIM_CCER_CC2NE);
@@ -264,7 +269,7 @@ void Mask_Channel(uint8_t channel) {
 void Unmask_Channel(uint8_t channel) {
     switch(channel) {
         case 1:
-            TIM1->CCER |= (TIM_CCER_CC1E | TIM_CCER_CC1NE);
+            TIM1->CCER |= (TIM_CCER_CC1E | TIM_CCER_CC1NE);  // Complementary PWM Enable
             break;
         case 2:
             TIM1->CCER |= (TIM_CCER_CC2E | TIM_CCER_CC2NE);
